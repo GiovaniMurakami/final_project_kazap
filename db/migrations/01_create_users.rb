@@ -4,7 +4,7 @@ Sequel.migration do
       primary_key :id
       String :name, null: false
       String :cpf_cnpj, null: false, unique: true
-      foreign_key :address_id, :address, null: false
+      String :address, text: true, default: '[]'
       String :phone_number, null: false
     end
   end
