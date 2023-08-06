@@ -1,14 +1,24 @@
 module Bank_statements
     def self.show_last_statements(account_id)
-        last_transactions = Transaction.where(account_id: account_id).order(Sequel.desc(:created_at)).limit(10)
-
-        export = last_transactions.each do |transaction|
+        last_transactions = Transaction.where(account_id: account_id).order(Sequel.desc(:created_at)).limit(10).all
+        if last_transactions == []
+            puts Rainbow("Ainda não existe nenhuma transação nessa conta").red
+            return
+        end
+        last_transactions.each do |transaction|
             puts "ID da transação: #{transaction.id}"
             puts "ID da conta: #{transaction.account_id}"
             puts "Valor: #{transaction.amount}"
             puts "Descrição: #{transaction.description}"
             puts "Criado em: #{transaction.created_at}"
             puts "------------------------------------"
+        end
+        print "Exportar extrato?[s/n] "
+        choose = gets.chomp.downcase
+        if choose == 's'
+            Bank_statements.export_statements(account_id)
+        else
+            return
         end
     end
 

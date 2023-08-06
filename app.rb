@@ -141,13 +141,6 @@ loop do
 
                         when 5
                             Bank_statements.show_last_statements(account.id)
-                            print "Exportar extrato?[s/n] "
-                            choose = gets.chomp.downcase
-                            if choose == 's'
-                                Bank_statements.export_statements(account.id)
-                            else
-                                break
-                            end
                         when 6
                             puts Rainbow("Até mais").green
                             break
