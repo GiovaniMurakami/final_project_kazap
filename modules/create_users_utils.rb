@@ -31,6 +31,6 @@ module Create_user_utils
         )
 
         user.save if user.valid?
-        puts "Usuário cadastrado com sucesso, o seu ID é: #{user.id}"
+        puts Rainbow("Usuário cadastrado com sucesso, o seu ID é: #{user.id}").green
     end
 end
