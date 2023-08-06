@@ -17,7 +17,7 @@ module Deposit_utils
                 account.balance -= withdraw
             end
         else
-            puts "Saldo insuficiente"
+            puts Rainbow("Saldo insuficiente").red
         end
         new_transaction(account, withdraw, description)
     end
@@ -26,10 +26,14 @@ module Deposit_utils
         if payable?(account, amount + billing)
             description_to = "PIX_in" if description  == "PIX_out"
             description_to = "TED_in" if description  == "TED_out"
-            new_withdraw(account, amount + billing, description)
-            transaction_in(account_to, amount, description_to)
+            if account_to
+                new_withdraw(account, amount + billing, description)
+                transaction_in(account_to, amount, description_to)
+            else
+                puts Rainbow("Conta de destino não existe").red
+            end
         else
-            puts "Saldo insuficiente"
+            puts Rainbow("Saldo insuficiente").red
         end
     end
 
