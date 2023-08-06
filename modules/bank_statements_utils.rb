@@ -34,9 +34,9 @@ module Bank_statements
         uuid = UUID.new.generate
         file_name = "last_10_transaction_#{uuid}.json"
 
-        File.open(file_name, 'w') do |file|
+        File.open(assets/last_transactions/file_name, 'w') do |file|
             file.puts JSON.pretty_generate(transactions_array)
         end
-        puts Rainbow("Arquivo criado com sucesso na pasta assets/trasactions com nome #{file_name}").green
+        puts Rainbow("Arquivo criado com sucesso no diretório assets/trasactions com nome #{file_name}").green
     end
 end
