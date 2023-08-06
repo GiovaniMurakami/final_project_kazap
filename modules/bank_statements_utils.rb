@@ -13,7 +13,7 @@ module Bank_statements
     end
 
     def self.show_balance(account)
-        puts "O seu saldo é de #{account.balance - account.overdraft}, com limite disponível no cheque especial de : #{100 - account.overdraft}"
+        puts "O seu saldo é de #{account.balance}, com limite disponível no cheque especial de : #{100 - account.overdraft}"
         puts "============================="
     end
 
