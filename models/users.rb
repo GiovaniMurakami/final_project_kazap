@@ -3,7 +3,7 @@ class User < Sequel::Model
   plugin :validation_helpers
 
   def validate
-    super
-    
+    validates_presence [:name, :cpf_cnpj, :address, :phone_number]
+    validates_unique [:cpf_cnpj]
   end
 end
