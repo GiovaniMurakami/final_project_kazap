@@ -68,7 +68,7 @@ loop do
             print "Informe o ID da sua conta: "
             account_id = gets.chomp.to_i
             account = Account.where(id: account_id).first
-
+                if account
                 loop do
                     overdraft = account.overdraft
                     balance = account.balance
@@ -155,6 +155,9 @@ loop do
                             puts Rainbow("Opção inválida").red
                     end
                 end
+            else
+                puts Rainbow("Conta inexistente").red
+            end
         when 3
             puts Rainbow("Até mais").green
             break
