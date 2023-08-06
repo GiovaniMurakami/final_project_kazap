@@ -13,7 +13,7 @@ module Bank_statements
     end
 
     def self.show_balance(account)
-        puts "O seu saldo é de #{account.balance}, com limite disponível no cheque especial de : #{100 - account.overdraft}"
+        puts Rainbow("O seu saldo é de #{account.balance}, com limite disponível no cheque especial de : #{100 - account.overdraft}").green
         puts "============================="
     end
 
@@ -32,10 +32,11 @@ module Bank_statements
         end
 
         uuid = UUID.new.generate
-        file_name = "last_10_transaction.json"
+        file_name = "last_10_transaction_#{uuid}.json"
 
         File.open(file_name, 'w') do |file|
-        file.puts JSON.pretty_generate(transactions_array)
+            file.puts JSON.pretty_generate(transactions_array)
         end
+        puts Rainbow("Arquivo criado com sucesso na pasta assets/trasactions com nome #{file_name}").green
     end
 end
