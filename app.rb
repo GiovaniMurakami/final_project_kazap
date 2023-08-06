@@ -1,4 +1,8 @@
 require 'sequel'
+require 'json'
+require 'uuid'
+require 'rainbow'
+
 
 DB = Sequel.sqlite('./db/bank.db')
 
@@ -6,175 +10,155 @@ require './models/users'
 require './models/accounts'
 require './models/transactions'
 
-puts "Menu de opções"
-puts "1. Criar conta ou cliente"
-puts "2. Login em conta"
-puts "3. Sair"
-print "Escolha uma opção: "
-option_menu = gets.chomp.to_i
+require_relative 'modules/create_users_utils'
+require_relative 'modules/create_accounts_utils'
+require_relative 'modules/deposit_utils'
+require_relative 'modules/bank_statements_utils'
 
-case option_menu
-    when 1
+loop do
+    puts "=================================="
+    puts "Menu de opções"
+    puts "=================================="
+    puts "1. Criar/exluir conta ou criar cliente"
+    puts "2. Login em conta"
+    puts "3. Sair"
+    print "Escolha uma opção: "
+    option_menu = gets.chomp.to_i
 
-        puts "1. Criar cliente"
-        puts "2. Criar conta"
-        puts "3. Sair"
-        print "Escolha uma opção: "
-        option_create = gets.chomp.to_i
-
-        case option_create
-
+    case option_menu
         when 1
-            print "Informe o seu nome: "
-            name = gets.chomp
-
-            print "Informe o seu CPF ou CNPJ: "
-            cpf_cnpj = gets.chomp
-
-            print "Informe a sua rua: "
-            street = gets.chomp
-
-            print "Informe o número do local: "
-            house_number = gets.chomp
-
-            print "Informe o bairro: "
-            neighborhood = gets.chomp
-
-            print "Informe o estado: "
-            state = gets.chomp
-
-            address = [street, cpf_cnpj, house_number, neighborhood, state]
-
-            print "Informe um telefone de contato: "
-            phone_number = gets.chomp
-
-            user = User.new(
-                name: name,
-                cpf_cnpj: cpf_cnpj,
-                address: "#{address}",
-                phone_number: phone_number
-            )
-
-            user.save if user.valid?
-
-        when 2
-
-            print "Informe o ID do cliente: "
-            user_id = gets.chomp.to_i
-            user = User.where(id: user_id).first
-            new_account = Account.new()
-            user.add_account(new_account)
-
-        when 3
-            puts "Até mais"
-            return
-        else
-            puts "Opção inválida"
-        end
-    when 2
-        print "Informe o ID da sua conta: "
-        account_id = gets.chomp.to_i
-        account = Account.where(id: account_id).first
-
             loop do
+            puts "=================================="
+            puts "1. Criar cliente"
+            puts "2. Criar conta"
+            puts "3. Excluir conta"
+            puts "4. Sair"
+            puts "=================================="
+            print "Escolha uma opção: "
+            option_create = gets.chomp.to_i
 
-                overdraft = account.overdraft
-                balance = account.balance
-
-                puts "Menu de opções"
-                puts "1. Realizar depósito"
-                puts "2. Realizar saque"
-                puts "3. Consultar saldo"
-                puts "4. Transferências"
-                puts "5. Extrato das últimas 10 transações"
-                puts '============================='
-                print "Escolha uma opção: "
-
-
-                option = gets.chomp.to_i
-                
-                case option
+                case option_create
                     when 1
-
-                        puts "Foi escolhido: Depósito"
-                        print "Informe o valor do depósito: "
-                        deposit = gets.chomp.to_f
-
-                        new_transaction = Transaction.new(
-                            amount: deposit,
-                            description: "deposit"
-                        )
-
-                        account.add_transaction(new_transaction)
-
-                        if  account.overdraft > 0
-                            puts "Você possui pendências com o cheque especial no total de #{account.overdraft}"
-                            
-                            if deposit < account.overdraft
-                                puts "Com esse deposito, o valor final de pendências do cheque especial será: #{account.overdraft - deposit}"
-                                account.overdraft -= deposit
-                            else
-                                puts "Com esse depóstito, o valor final das pendências do cheque especial será 0"
-                                account.balance += deposit - account.overdraft
-                                account.overdraft = 0
-                            end
-                        else
-                            account.balance += deposit
-                        end
-
-                        account.save
-
+                        Create_user_utils.create_new_user
                     when 2
-
-                        puts "Foi escolhido saque"
-                        print "Informe o valor do saque: "
-                        withdraw = gets.chomp.to_f
-
-                        new_transaction = Transaction.new(
-                            amount: withdraw,
-                            description: "withdraw"
-                        )
-
-                        account.add_transaction(new_transaction)      
-
-                        overdraft = 100 - account.overdraft
-                        if withdraw > account.balance + overdraft
-                            puts "Saldo insuficiente"
-                        else
-                            if withdraw > account.balance
-                                account.overdraft += withdraw - account.balance
-                                account.balance = 0
-                            else
-                                account.balance -= withdraw
-                            end
-                        end
-
-                        account.save
-
+                        print "Informe o ID do cliente: "
+                        user_id = gets.chomp.to_i
+                        Create_accounts_utils.create_new_account(user_id)
                     when 3
-                        puts "Foi escolhido: Consultar saldo"
-                        puts "O seu saldo é de #{account.balance}, com cheque especial de : #{100 - account.overdraft}"
-                    when 4
-                        puts "Escolheu opção 4"
-                    when 5
+                        print "Informe o ID da conta a ser excluída: "
+                        account_id = gets.chomp.to_i
+                        account = Account[id: account_id]
 
-                        last_transactions = Transaction.where(account_id: account_id).order(Sequel.desc(:created_at)).limit(10)
-
-                        last_transactions.each do |transaction|
-                        puts "ID da transação: #{transaction.id}"
-                        puts "ID da conta: #{transaction.account_id}"
-                        puts "Valor: #{transaction.amount}"
-                        puts "Descrição: #{transaction.description}"
-                        puts "Criado em: #{transaction.created_at}"
-                        puts "-----------------------------"
+                        if account
+                            transactions_to_delete = Transaction.where(account_id: account_id)
+                            transactions_to_delete.each(&:delete)
+                            account.delete
+                            puts Rainbow("Conta e transações associadas excluídas com sucesso!").green
+                        else
+                            puts Rainbow("Conta não encontrada.").red
                         end
-
+                    when 4
+                        puts "Até mais"
+                        break
                     else
-                        puts "Escolheu opção inválida"
+                        puts Rainbow("Opção inválida").red
+                    end
                 end
-            end
-    when 3
-        puts "Até mais"
-    else
-        puts "Escolheu opção inválida" 
+        when 2
+            print "Informe o ID da sua conta: "
+            account_id = gets.chomp.to_i
+            account = Account.where(id: account_id).first
+
+                loop do
+                    overdraft = account.overdraft
+                    balance = account.balance
+
+                    puts "Menu de opções"
+                    puts "1. Realizar depósito"
+                    puts "2. Realizar saque"
+                    puts "3. Consultar saldo"
+                    puts "4. Transferências"
+                    puts "5. Extrato das últimas 10 transações"
+                    puts "6. Sair"
+                    puts '============================='
+                    print "Escolha uma opção: "
+
+
+                    option = gets.chomp.to_i
+                    
+                    case option
+                        when 1
+                            puts "Foi escolhido: Depósito"
+                            print "Informe o valor do depósito: "  
+                            deposit = gets.chomp.to_f
+
+                            Deposit_utils.new_deposit(account, deposit, "deposit")
+                            Bank_statements.show_balance(account)
+                        when 2
+                            puts "Foi escolhido saque"
+                            print "Informe o valor do saque: "
+                            withdraw = gets.chomp.to_f
+
+                            Deposit_utils.new_withdraw(account, withdraw, "withdraw")
+                            Bank_statements.show_balance(account)
+                        when 3
+                            puts "Foi escolhido: Consultar saldo"
+                            Bank_statements.show_balance(account)
+                        when 4
+                            puts "Foi escolhido: Tranferência"
+                            puts "1. TED"
+                            puts "2. PIX"
+                            puts "3. Voltar"
+                            print "Escolha uma opção: "
+                            option_transaction = gets.chomp.to_i
+
+                            case option_transaction
+                            when 1
+                                puts "Transações do tipo TED possuem uma taxa de 1%"
+                                print "Informe o valor da transferência: "
+                                transaction_amount = gets.chomp.to_f
+                                print "Informe o ID da conta destino: "
+                                account_id = gets.chomp.to_i
+                                account_to = Account[id: account_id]
+
+                                Deposit_utils.transaction_out(account, transaction_amount, transaction_amount * 0.01, "TED_out", account_to)
+                                Bank_statements.show_balance(account)
+                            when 2
+                                print "Informe o valor da transferência: "
+                                transaction_amount = gets.chomp.to_f
+                                print "Informe o ID da conta destino: "
+                                account_id = gets.chomp.to_i
+                                account_to = Account[id: account_id]
+
+                                Deposit_utils.transaction_out(account, transaction_amount, 0, "PIX_out", account_to)
+
+                            when 3
+                                "Até mais"
+                                break
+                            else
+                                puts Rainbow("Opção inválida").red
+                            end
+
+                        when 5
+                            Bank_statements.show_last_statements(account.id)
+                            print "Exportar extrato?[s/n] "
+                            choose = gets.chomp.downcase
+                            if choose == 's'
+                                Bank_statements.export_statements(account.id)
+                            else
+                                break
+                            end
+                        when 6
+                            puts Rainbow("Até mais").green
+                            break
+                        else
+                            puts Rainbow("Opção inválida").red
+                    end
+                end
+        when 3
+            puts Rainbow("Até mais").green
+            break
+        else
+            puts Rainbow("Opção inválida").red 
+    end
 end
