@@ -56,7 +56,7 @@ Com essa funcionalidade é possível excluir uma conta e todas as transações a
 ### Menu de login em contas
 É possível acessar esse login digitando '2' no menu inicial da aplicação.
 #### Depósito
-Com essa funcionalidade é possível adicionar fundos a uma conta logada, e pagar o limite do cheque-especial automaticamente (se ehouver e se necessário), é possível utilizar essa funcionalidade clicando em '1' após digitar o ID da conta desejada. Após realizado um depósito, é gerado uma transação na tabela 'transactions' com informações dessa movimentação.
+Com essa funcionalidade é possível adicionar fundos a uma conta logada, e pagar o limite do cheque-especial automaticamente (se houver e se necessário), é possível utilizar essa funcionalidade clicando em '1' após digitar o ID da conta desejada. Após realizado um depósito, é gerado uma transação na tabela 'transactions' com informações dessa movimentação.
 #### Saque
 Com essa funcionalidade é possível remover fundos de uma conta logada e utilizar o limite disponível do cheque-especial automaticamente (se houver e se necessário), é possível utilizar essa funcionalidade clicando em '2' após digitar o ID da conta desejada. Após realizado um saque, é gerado uma transação na tabela 'transactions' com informações dessa movimentação.
 #### Consultar saldo
